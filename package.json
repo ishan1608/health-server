@@ -1,0 +1,20 @@
+{
+  "name": "health-server",
+  "version": "0.0.0",
+  "description": "Health app web interface server.",
+  "main": "app.js",
+  "engines": {
+    "node": "0.10.x"
+  },
+  "dependencies": {
+    "cookies": "^0.5.0",
+    "formidable": "^1.0.16",
+    "keygrip": "^1.0.1",
+    "mongodb": "^1.4.30",
+    "node-static": "^0.7.6"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ishanatmuz/health-server"
+  }
+}
