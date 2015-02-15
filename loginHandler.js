@@ -4,6 +4,8 @@ var crypto = require('crypto');
 var Cookies = require( "cookies" )
 var keygrip = require("keygrip")
 
+var mongoUri = process.env.MONGOHQ_URL || 'mongodb://127.0.0.1:27017/health-database';
+
 // Hardcoded user Information
 var users = [
     { useremail: 'ishan1608@gmail.com', userpassword: '123456', cookiejar:[]},
