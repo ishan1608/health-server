@@ -3,6 +3,7 @@ var util = require('util');
 var crypto = require('crypto');
 var Cookies = require( "cookies" )
 var keygrip = require("keygrip")
+var MongoClient = require('mongodb').MongoClient;
 
 var mongoUri = process.env.MONGOHQ_URL || 'mongodb://127.0.0.1:27017/health-database';
 
@@ -15,26 +16,42 @@ var users = [
 
 var keys = keys = keygrip([ process.env.COOKIESECRET1 || "COOKIESECRET1", process.env.COOKIESECRET2 || "COOKIESECRET2" ], 'sha256', 'hex');
 
-function userVerification(useremail, userpassword) {
-    // Checks for the validation of email and password and returns a new cookie, and stores the cookie as valid cookies
-    var totalUsers = users.length;
-    for(var i = 0; i < totalUsers; i++) {
-        if(users[i].useremail === useremail) {
-            if(users[i].userpassword === userpassword) {
-                // Generate a new cookie
-                var date = new Date();
-                var hashString = useremail + date.toDateString() + date.getHours() + date.getMinutes() + date.getMilliseconds();
-                hashString = crypto.createHash('md5').update(hashString).digest("hex");
-                // Adding it to the cookiejar
-                users[i].cookiejar.push(hashString);
-                console.log(util.inspect(users))
-                return hashString;
-            } else {
-                return null;
-            }
+// Asynchronous function using callback
+function userVerification(useremail, userpassword, callback) {
+    // The database version
+    MongoClient.connect(mongoUri, function(err, db) {
+        if(err) {
+            console.error('Error while connecting to the database');
+            callback('no-database', null);
+        } else {
+            var collection = db.collection('users');
+            collection.findOne({email: useremail, password: userpassword}, function(err, result) {
+                if(!result) {
+                    console.log('Cannnot find the username and password combination.');
+                    callback('invalid-credentials', null);
+                } else {
+                    console.dir(result);
+                    // Generate a new cookie
+                    var date = new Date();
+                    var hashString = useremail + date.toDateString() + date.getHours() + date.getMinutes() + date.getMilliseconds();
+                    hashString = crypto.createHash('md5').update(hashString).digest("hex");
+                    
+                    // Adding it to the cookiejar
+                    collection.update({email: useremail}, {$push: {cookiejar: hashString}}, function(err){
+                        db.close();
+                        if(err) {
+                            console.error(err);
+                            callback('update-error', null);
+                        } else {
+                            console.log('Updated successfully');
+                            console.log(hashString);
+                            callback(null, hashString);
+                        }
+                    });
+                }
+            });
         }
-    }
-    return null;
+    });
 }
 
 // Local login using emailId and password combination
@@ -46,37 +63,40 @@ function loginLocal(req, res) {
     var form = new formidable.IncomingForm();
     form.parse(req, function (err, fields, files) {
         // Need to set cookies on my own. For now I will test using hardocded users and hardocded cookie
+        userVerification(fields.useremail, fields.userpassword, function(err, sessionCookie) {
+            console.log('Login returned', sessionCookie);
+            if(sessionCookie) {
+                console.log("Login successful with sessionCookie : " + sessionCookie);
+                // Set the cookie in the client's browser
+                // Two cookies : email, session
+    //            keys = keygrip([ process.env.COOKIESECRET1 || "COOKIESECRET1", process.env.COOKIESECRET2 || "COOKIESECRET2" ], 'sha256', 'hex');
+                // Moved keys to top
+    //            console.log(keys);
+                var cookies = new Cookies( req, res, keys);
 
-        var sessionCookie = userVerification(fields.useremail, fields.userpassword);
-        if(sessionCookie) {
-            console.log("Login successful with sessionCookie : " + sessionCookie);
-            // Set the cookie in the client's browser
-            // Two cookies : email, session
-//            keys = keygrip([ process.env.COOKIESECRET1 || "COOKIESECRET1", process.env.COOKIESECRET2 || "COOKIESECRET2" ], 'sha256', 'hex');
-            // Moved keys to top
-//            console.log(keys);
-            var cookies = new Cookies( req, res, keys);
-            
-            // setting email cookie
-            cookies.set( "email", fields.useremail, { signed: true } );
-            
-            // setting session cookie
-            cookies.set( "session", sessionCookie, { signed: true } );
-            
-            // Redirect the user then
-            res.writeHead(302, {'Location': '/dashboard'});
-            return res.end();
-        } else {
-            console.log("Login failed with cookie : " + sessionCookie);
-            res.writeHead(302, {'Location': '/index/?email=' + fields.useremail});
-        }
-        res.end(util.inspect({fields: fields}));
+                // setting email cookie
+                cookies.set( "email", fields.useremail, { signed: true } );
+
+                // setting session cookie
+                cookies.set( "session", sessionCookie, { signed: true } );
+
+                // Redirect the user then
+                res.writeHead(302, {'Location': '/dashboard'});
+//                return res.end();
+                res.end();
+            } else {
+                console.log("Login failed with cookie : " + sessionCookie);
+                res.writeHead(302, {'Location': '/index/?email=' + fields.useremail});
+                res.end();
+            }
+//            res.end(util.inspect({fields: fields}));
+        });
     });
 }
 
-function ensureAuthenticated(req, res) {
+function ensureAuthenticated(req, res, callback) {
     // Function to check whether the user is already authenticated or not.
-    // Get the cookies email and session as argument validate them and return true or false.
+    // Get the cookies email and session as argument validate them and calls callback email or false
     var cookies = new Cookies(req, res, keys);
     var cookieError = false;
     try {
@@ -91,32 +111,27 @@ function ensureAuthenticated(req, res) {
     }
     
     if(!cookieError) {
-        var totalUsers = users.length;
-//        console.log("totalUsers" + totalUsers);
-        for( var i=0; i < totalUsers; i++) {
-            if(users[i].useremail === emailCookie) {
-//                console.log("users[i].useremail: " + users[i].useremail);
-                var cookieJar = users[i].cookiejar;
-                var cookieJarLength = cookieJar.length;
-                console.log("cookieJar " + cookieJar);
-//                console.log("users[i].cookiejar.length " + cookieJarLength);
-                for(var j = 0; j < cookieJarLength; j++ ) {
-//                    console.log("cookieJar[j] "+ cookieJar[j]);
-                    if(cookieJar[j] === sessionCookie) {
-//                        console.log("Cookie matched");
-                        return emailCookie;
+        MongoClient.connect(mongoUri, function(err, db) {
+            if(err) {
+                console.error('Error connecting to database.');
+                callback(false);
+            } else {
+                var collection = db.collection('users');
+                collection.findOne({email: emailCookie, cookiejar: sessionCookie}, function(err, result) {
+                    db.close();
+                    if(!result) {
+                        console.error('Could not find the session.');
+                        callback(false);
+                    } else {
+                        console.log('Found login session');
+                        callback(emailCookie);
                     }
-                }
-//                console.log("No cookie found");
-                return false;
+                });
             }
-        }
-        // User doesn't exists
-//        console.log("User doesn't exists");
-        return false;
+        });
     } else {
 //        console.log("Returning false because couldn't get all the cookies.");
-        return false;
+        callback(false);
     }
 }
 
@@ -134,19 +149,16 @@ function logout(req, res) {
         console.log("emailCookie : " + emailCookie);
         console.log("sessionCookie : " + sessionCookie);
 //        console.log("typeof(sessionCookie) "+ typeof(sessionCookie));
-        var totalUsers = users.length;
-        for( var i = 0; i < totalUsers; i++) {
-            if(users[i].useremail === emailCookie) {
-                var cookieJar = users[i].cookiejar;
-                
-                console.log("cookieJar " + cookieJar);
-                var cookiePosition = cookieJar.indexOf(sessionCookie);
-                if(cookiePosition != -1) {
-                    cookieJar.splice(cookiePosition, 1);
-                }
-                console.log("cookieJar " + cookieJar);
+        // Removing cookie from the database
+        MongoClient.connect(mongoUri, function(err, db) {
+            if(err) {
+                console.error('Cannot connect to database');
+            } else {
+                var collection = db.collection('users');
+                collection.update({email: emailCookie}, {$pull: {cookiejar: sessionCookie}}, {w: 0});
+                db.close();
             }
-        }
+        });
     } catch(error) {
         console.log("Couldn't find any cookie, nothing to logout.");
     }
