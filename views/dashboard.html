@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+    <head>
+        <title>HealthKeeper - {{useremail}}</title>
+        <link href='http://fonts.googleapis.com/css?family=Ubuntu:300' rel='stylesheet' type='text/css'>
+        <link href="../css/dash.css" rel="stylesheet" type="text/css">
+    </head>
+    <body>
+        <header id="header-main">
+            <a href="/" class="nav-title">Health Keeper</a>
+            <span id="settings-panel">
+                <img id="theme-menu" class="settings-menu" src="../img/cogwheel.png" />
+                <img class="settings-menu signout-menu" src="../img/bluemanm.png"/>
+            </span>
+        </header>
+        <section id="content-main">
+            <nav id="nav-bar">
+                <p>sdakhfffffffffffj</p>
+                <p>sdakhfffffffffffj</p>
+                <p>sdakhfffffffffffj</p>
+                <p>sdakhfffffffffffj</p>
+                <p>sdakhfffffffffffj</p>
+                <p>sdakhfffffffffffj</p>
+                <nav id="logout-panel">
+                    <a href="/logout">Sign Out</a><br/>
+                    <input id="logout-others-button" type="Button" value="Log out other sessions"/>
+                </nav>
+            </nav>
+            <p>Welcome {{useremail}}</p>
+        </section>
+        <script>
+            // XHR for logging out
+            function logoutOthersListener () {
+              alert('Other sessions logged out.');
+            }
+
+            var logoutOthersXHR = new XMLHttpRequest();
+            logoutOthersXHR.onload = logoutOthersListener;
+
+            // Button click handling
+            var logoutOthersButton = document.getElementById("logout-others-button");
+            logoutOthersButton.onclick = function() {
+                alert('clicked');
+                logoutOthersXHR.open("get", "/logoutothers", true);
+                logoutOthersXHR.send();
+            }
+        </script>
+    </body>
+</html>

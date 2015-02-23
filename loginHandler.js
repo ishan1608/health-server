@@ -141,7 +141,8 @@ function logout(req, res) {
     try {
         var emailCookie = cookies.get("email", {signed: true});
         // Clearing the cookie
-        cookies.set( "email", null, { signed: true } );
+        // Not planning to clear the email cookie so that we can remember who last logged in
+//        cookies.set( "email", null, { signed: true } );
         
         var sessionCookie = cookies.get("session", {signed: true});
         cookies.set( "session", null, { signed: true } );

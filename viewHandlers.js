@@ -1,5 +1,6 @@
 var fs = require('fs');
-var loginHandler = require('./loginHandler')
+var mustache = require('mustache');
+var loginHandler = require('./loginHandler');
 
 // Request handling for Views
 
@@ -41,9 +42,22 @@ function dashboard(req, res) {
     loginHandler.ensureAuthenticated(req, res, function(userEmail) {
         // Reqponse based on user authentication
         if(userEmail) {
-            res.writeHead(200, {'Content-Type': 'text/html; charset=utf-8'});
-            res.write("<!doctype html><html><head></head><body><h3>Welcome <b>" + userEmail + "</b></h3><br/><br/><a href='/logout'>Logout</a></body></html>");
-            res.end();
+//            res.writeHead(200, {'Content-Type': 'text/html; charset=utf-8'});
+//            res.write("<!doctype html><html><head></head><body><h3>Welcome <b>" + userEmail + "</b></h3><br/><br/><a href='/logout'>Logout</a></body></html>");
+//            res.end();
+            fs.readFile('views/dashboard.html', function(err, template) {
+                if(err) {
+                    res.writeHead(500, {'Content-Type': 'text/plain; charset=utf-8;'});
+                    res.end('There was an internal server error.\nSomething is broken :(');
+                } else {
+                    res.writeHead(200, {'Content-Type': 'text/html; charset=utf-8;'});
+                    var data = {
+                        useremail: userEmail
+                    }
+                    res.write(mustache.to_html(template.toString(), data));
+                    res.end();
+                }
+            });
         } else {
             res.writeHead(401, {'ContentType': 'text/html;charset=utf-8', 'WWW-Authenticate': 'email, session'});
             res.write("<html><head></head><body>We couldn't figure out who you are.<br/>For all we know you could be trying to find a vlunerability in our system. Please <a href='/'>Login</a> to continue.</body></html>");

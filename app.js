@@ -15,7 +15,7 @@ http.createServer(function (req, res) {
 //    console.log(firstLocation);
     
     // Serving CSS, JS, Images and favicon
-    if(firstLocation === 'css' || firstLocation === 'script' || firstLocation === 'image' || firstLocation === 'favicon.ico') {
+    if(firstLocation === 'css' || firstLocation === 'script' || firstLocation === 'img' || firstLocation === 'favicon.ico') {
 //        console.log("CSS, JS or favicon.ico; needed static hosting");
         staticServer.serve(req, res);
     } else {
