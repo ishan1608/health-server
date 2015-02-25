@@ -168,6 +168,58 @@ function logout(req, res) {
     res.end();
 }
 
+function logoutOthers(req, res) {
+    var cookies = new Cookies(req, res, keys);
+    var cookieError = false;
+    try {
+        var emailCookie = cookies.get("email", {signed: true});
+        var sessionCookie = cookies.get("session", {signed: true});
+        console.log("emailCookie : " + emailCookie);
+        console.log("sessionCookie : " + sessionCookie);
+//        console.log("typeof(sessionCookie) "+ typeof(sessionCookie));
+    } catch(error) {
+        cookieError = true;
+//        console.log("Couldn't find any cookie");
+    }
+    
+    if(!cookieError) {
+        // TODO: Must ensure authentication before continuing
+        MongoClient.connect(mongoUri, function(err, db) {
+            var collection = db.collection('users');
+            collection.update({email: emailCookie}, {$set: {cookiejar: []}}, function(err) {
+                if(err) {
+                    console.error('Could not remove other');
+                    db.close();
+                    console.error('remove-error');
+                    res.write(500, {'Content-Type': 'text/plain;charset=utf-8;'});
+                    res.end('An internal server error occured.');
+                } else {
+                    collection.update({email: emailCookie}, {$push: {cookiejar: sessionCookie}}, function(err) {
+                        db.close();
+                        if(err) {
+                            console.error('Could not add the session cookie');
+                            console.error('push-error');
+                            res.write(500, {'Content-Type': 'text/plain;charset=utf-8;'});
+                            res.end('An internal server error occured.');
+                        } else {
+                            console.log('Successfully logged out others.');
+                            res.write(200, {'Content-Type': 'text/plain;charset=utf-8;'});
+                            res.end('Successfully logged out all other sessions.');
+                        }
+                    });
+                }
+            });
+        });
+    } else {
+        res.writeHead(401, {'ContentType': 'text/html;charset=utf-8', 'WWW-Authenticate': 'email, session'});
+        res.write("<html><head></head><body>We couldn't figure out who you are.<br/>For all we know you could be trying to find a vlunerability in our system. Please <a href='/'>Login</a> to continue.</body></html>");
+        res.end();
+    }
+    
+    
+};
+
 exports.loginLocal = loginLocal;
 exports.ensureAuthenticated = ensureAuthenticated;
 exports.logout = logout;
+exports.logoutOthers = logoutOthers;

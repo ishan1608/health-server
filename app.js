@@ -15,7 +15,7 @@ http.createServer(function (req, res) {
 //    console.log(firstLocation);
     
     // Serving CSS, JS, Images and favicon
-    if(firstLocation === 'css' || firstLocation === 'script' || firstLocation === 'img' || firstLocation === 'favicon.ico') {
+    if(firstLocation === 'css' || firstLocation === 'js' || firstLocation === 'img' || firstLocation === 'favicon.ico') {
 //        console.log("CSS, JS or favicon.ico; needed static hosting");
         staticServer.serve(req, res);
     } else {
@@ -33,6 +33,9 @@ http.createServer(function (req, res) {
                 break;
                 case 'logout':
                     loginHandler.logout(req, res);
+                break;
+                case 'logoutothers':
+                    loginHandler.logoutOthers(req, res);
                 break;
                 default:
                     viewHandlers.notFound(req, res);

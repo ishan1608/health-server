@@ -42,7 +42,6 @@
             // Button click handling
             var logoutOthersButton = document.getElementById("logout-others-button");
             logoutOthersButton.onclick = function() {
-                alert('clicked');
                 logoutOthersXHR.open("get", "/logoutothers", true);
                 logoutOthersXHR.send();
             }
