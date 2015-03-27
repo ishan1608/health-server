@@ -37,6 +37,12 @@ http.createServer(function (req, res) {
                 case 'logoutothers':
                     loginHandler.logoutOthers(req, res);
                 break;
+                case 'register':
+                    loginHandler.register(req, res);
+                break;
+                case 'registeruser':
+                    loginHandler.registeruser(req, res);
+                break;
                 default:
                     viewHandlers.notFound(req, res);
         }

@@ -4,6 +4,7 @@ var crypto = require('crypto');
 var Cookies = require( "cookies" )
 var keygrip = require("keygrip")
 var MongoClient = require('mongodb').MongoClient;
+var fs = require('fs');
 
 var mongoUri = process.env.MONGOHQ_URL || 'mongodb://127.0.0.1:27017/health-database';
 
@@ -222,7 +223,35 @@ function logoutOthers(req, res) {
     
 };
 
+function register(req, res) {
+    // Serving the registration page
+    fs.readFile('views/register.html', {'encoding': 'utf-8'}, function (err, data) {
+        if (err) {
+            console.log('Error occurred while reading');
+            res.writeHead(500, {'Content-Type': 'text/plain; charset=utf-8'});
+            res.write('There was an internal error on the server.\nPlease try again at a later time, or contact the system admins.');
+        } else {
+            // console.log('Sending the register page');
+            res.writeHead(200, {'Content-Type': 'text/html; charset=utf-8'});
+            res.write(data);
+            res.end();
+        }
+    });
+};
+
+function registeruser(req, res) {
+    // TODO: Check if user already exists
+    var form = formidable.IncomingForm();
+    form.parse(req, function(err, fields, files) {
+        res.writeHead(200, {'Content-Type': 'text/plain', 'charset': 'utf-8'});
+        res.write(fields.user_name + "\n" + fields.user_email + "\n" + fields.user_gender + "\n" + fields.user_password + "\n");
+        res.end('I am working on sending a verification email before completing the registration.');
+    });
+};
+
 exports.loginLocal = loginLocal;
 exports.ensureAuthenticated = ensureAuthenticated;
 exports.logout = logout;
 exports.logoutOthers = logoutOthers;
+exports.register = register;
+exports.registeruser = registeruser;

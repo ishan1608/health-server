@@ -160,3 +160,11 @@ My Custom themes
 .light-green-theme {
     background-color: rgb(130, 186, 0);
 }
+.nav-title {
+    font-family: 'Ubuntu', sans-serif;
+    font-weight: 300;
+    font-size: 2em;
+    color: white;
+    letter-spacing: 0.2em;
+    text-decoration: none;
+}

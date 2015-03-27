@@ -9,7 +9,7 @@ body {
     padding-top: 10%;
 }
 
-#loginForm {
+.home-form {
     margin-top: 20px;
     padding: 6%;
     background-color: rgb(255, 255, 255);
@@ -39,4 +39,22 @@ body {
     border-color: #0074a2;
     box-shadow: inset 0 1px 0 rgba(120, 200, 230, 0.6);
     color: #ffffff;
+}
+
+#signup-button {
+    font-family: Courier New;
+    color: #3498db;
+    font-size: 20px;
+    padding: 10px 20px 10px 20px;
+    border: solid #1f628d 2px;
+    text-decoration: none;
+}
+#signup-button:hover {
+    background: #dfeaf0;
+    background-image: -webkit-linear-gradient(top, #dfeaf0, #87cfff);
+    background-image: -moz-linear-gradient(top, #dfeaf0, #87cfff);
+    background-image: -ms-linear-gradient(top, #dfeaf0, #87cfff);
+    background-image: -o-linear-gradient(top, #dfeaf0, #87cfff);
+    background-image: linear-gradient(to bottom, #dfeaf0, #87cfff);
+    text-decoration: none;
 }
