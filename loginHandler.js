@@ -191,20 +191,23 @@ function logoutOthers(req, res) {
                     console.error('Could not remove other');
                     db.close();
                     console.error('remove-error');
-                    res.write(500, {'Content-Type': 'text/plain;charset=utf-8;'});
+                    res.writeHead(500, {'Content-Type': 'text/plain;charset=utf-8;'});
                     res.end('An internal server error occured.');
                 } else {
                     collection.update({email: emailCookie}, {$push: {cookiejar: sessionCookie}}, function(err) {
-                        db.close();
+                        
                         if(err) {
                             console.error('Could not add the session cookie');
                             console.error('push-error');
-                            res.write(500, {'Content-Type': 'text/plain;charset=utf-8;'});
+                            res.writeHead(500, {'Content-Type': 'text/plain;charset=utf-8;'});
                             res.end('An internal server error occured.');
+                            db.close();
                         } else {
-                            console.log('Successfully logged out others.');
-                            res.write(200, {'Content-Type': 'text/plain;charset=utf-8;'});
+                            console.log('Successfully logged out others. Not sending anything back to the client.');
+                            res.writeHead(200, {'Content-Type': 'text/plain;charset=utf-8;'});
                             res.end('Successfully logged out all other sessions.');
+                            db.close();
+                            
                         }
                     });
                 }
