@@ -12,8 +12,6 @@ var mongoUri = process.env.MONGOHQ_URL || 'mongodb://127.0.0.1:27017/health-data
 var fromEmail = process.env.FROM_EMAIL || 'tempexp6@gmail.com';
 var fromPassword = process.env.FROM_PASSWORD || 'TempExp@06';
 
-
-
 var keys = keygrip([ process.env.COOKIESECRET1 || "COOKIESECRET1", process.env.COOKIESECRET2 || "COOKIESECRET2" ], 'sha256', 'hex');
 
 // Asynchronous function using callback
@@ -323,7 +321,6 @@ function registeruser(req, res) {
                             }
                         }
                     });
-                    
                 }
             });
         }

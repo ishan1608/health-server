@@ -48,6 +48,12 @@ http.createServer(function (req, res) {
                 case 'confirmUser':
                     loginHandler.confirmUser(req, res);
                 break;
+                case 'profile':
+                    viewHandlers.profile(req, res);
+                break;
+                case 'uploadImage':
+                    viewHandlers.uploadImage(req, res);
+                break;
                 default:
                     viewHandlers.notFound(req, res);
         }
