@@ -251,59 +251,85 @@ function registeruser(req, res) {
             MongoClient.connect(mongoUri, function(err, db) {
                 if (err) {
                     res.writeHead(500, {'Content-Type': 'text/plain'});
-                    res.end('There was a problem storing the user info, please contact the admin.');
+                    res.end('There was an internal error, please contact the admin.');
+                    db.close();
                 } else {
-                    var collection = db.collection('pendingUsers');
-                    // Inserting the info of pending user
-                    var pendingUserInfo = {};
-                    pendingUserInfo.name = fields.user_name;
-                    pendingUserInfo.email = fields.user_email;
-                    pendingUserInfo.gender = fields.user_gender;
-                    pendingUserInfo.password = fields.user_password;
-
-                    // Generate a new pass
-                    var date = new Date();
-                    var pass = pendingUserInfo.email + date.toDateString() + date.getHours() + date.getMinutes() + date.getMilliseconds();
-                    pass = crypto.createHash('md5').update(pass).digest("hex");
-
-                    pendingUserInfo.pass = pass;
-                    var registrationURL = req.headers.host + '/confirmUser?user_email=' + pendingUserInfo.email + '&pass=' + pendingUserInfo.pass;
-
-                    collection.insert(pendingUserInfo, function(err, result) {
-                            if (err) {
+                    // Check the existence of the user before registering
+                    var collection = db.collection('users');
+                    collection.findOne({email: fields.user_email}, function(err, doc) {
+                        if(err) {
+                            res.writeHead(500, {'Content-Type': 'text/plain'});
+                            res.end('There was an internal error, please contact the admin.');
+                            db.close();
+                        } else {
+                            if(doc != null) {
                                 res.writeHead(200, {'Content-Type': 'application/json'});
-                                res.end(JSON.stringify({success: false, existing: false, sendError: false, requested: true}));
+                                res.end(JSON.stringify({success: false, existing: true, sendError: false, requested: false}));
+                                db.close();
                             } else {
-                                // Sending mail to the user
-                                var transporter = nodemailer.createTransport({
-                                    service: 'Gmail',
-                                    auth: {
-                                        user: fromEmail,
-                                        pass: fromPassword
-                                    }
-                                });
-                                transporter.sendMail({
-                                    from: fromEmail,
-                                    to: pendingUserInfo.email,
-                                    subject: 'Complete Registration',
-                                    text: registrationURL,
-                                    html: '<p>To complete the <b>registration</b> <a  target="_blank" href="http://' + registrationURL + '">click here</a></p><p>If clicking on the above link didn\'t work. Copy and paste the following url into your browser :</p><p>' + registrationURL + '</p>'
-                                }, function(error, response){
-                                    if(error){
-                                        console.log('Failed in sending mail');
+                                var collection = db.collection('pendingUsers');
+                                // Inserting the info of pending user
+                                var pendingUserInfo = {};
+                                pendingUserInfo.name = fields.user_name;
+                                pendingUserInfo.email = fields.user_email;
+                                pendingUserInfo.gender = fields.user_gender;
+                                pendingUserInfo.password = fields.user_password;
+
+                                // Generate a new pass
+                                var date = new Date();
+                                var pass = pendingUserInfo.email + date.toDateString() + date.getHours() + date.getMinutes() + date.getMilliseconds();
+                                pass = crypto.createHash('md5').update(pass).digest("hex");
+
+                                pendingUserInfo.pass = pass;
+                                var registrationURL = req.headers.host + '/confirmUser?user_email=' + pendingUserInfo.email + '&pass=' + pendingUserInfo.pass;
+                                        collection.insert(pendingUserInfo, function(err, result) {
+                                    if (err) {
                                         res.writeHead(200, {'Content-Type': 'application/json'});
-                                        res.end(JSON.stringify({success: false, existing: false, sendError: true, requested: false}));
-                                    }else{
-                                        console.log('Successful in sedning email');
-                                        res.writeHead(200, {'Content-Type': 'application/json'});
-                                        res.end(JSON.stringify({success: true, existing: false, sendError: false, requested: false}));
+                                        res.end(JSON.stringify({success: false, existing: false, sendError: false, requested: true}));
+                                        db.close();
+                                    } else {
+                                        // Sending mail to the user
+                                        var transporter = nodemailer.createTransport({
+                                            service: 'Gmail',
+                                            auth: {
+                                                user: fromEmail,
+                                                pass: fromPassword
+                                            }
+                                        });
+                                        transporter.sendMail({
+                                            from: fromEmail,
+                                            to: pendingUserInfo.email,
+                                            subject: 'Complete Registration',
+                                            text: registrationURL,
+                                            html: '<p>To complete the <b>registration</b> <a  target="_blank" href="http://' + registrationURL + '">click here</a></p><p>If clicking on the above link didn\'t work. Copy and paste the following url into your browser :</p><p>' + registrationURL + '</p>'
+                                        }, function(error, response){
+                                            if(error){
+                                                console.log('Failed in sending mail');
+                                                res.writeHead(200, {'Content-Type': 'application/json'});
+                                                res.end(JSON.stringify({success: false, existing: false, sendError: true, requested: false}));
+                                                db.close();
+                                            }else{
+                                                console.log('Successful in sedning email');
+                                                res.writeHead(200, {'Content-Type': 'application/json'});
+                                                res.end(JSON.stringify({success: true, existing: false, sendError: false, requested: false}));
+                                                db.close();
+                                            }
+                                        });
                                     }
-                                });
+                            });
+
+                                
+                                
                             }
+                        }
                     });
+                    
                 }
             });
         }
+        
+        
+        
 //        res.writeHead(200, {'Content-Type': 'text/plain', 'charset': 'utf-8'});
 //        res.write(fields.user_name + "\n" + fields.user_email + "\n" + fields.user_gender + "\n" + fields.user_password + "\n");
 //        res.end('I am working on sending a verification email before completing the registration.'); 

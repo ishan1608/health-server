@@ -31,33 +31,44 @@
             <form id="registration-form" class="col-xs-4 col-xs-offset-4" action="/registeruser" method="post">
                 <div class="form-group">
                     <label for="user_name">Name</label>
-                    <input type="text" class="form-control" id="user_name" placeholder="Jane Doe" name="user_name">
+                    <input type="text" class="form-control" id="user_name" placeholder="Jane Doe" name="user_name" required>
+                </div>
+                <div id="email_error_message" style="visibility: invisible;">
                 </div>
                 <div class="form-group">
                     <label for="user_email">Email address</label>
-                    <input type="email" class="form-control" id="user_email" placeholder="user@example.com" name="user_email">
+                    <input type="email" class="form-control" id="user_email" placeholder="user@example.com" name="user_email" required>
                 </div>
+                <label>Gender</label>
                 <div class="radio">
                     <label>
                         <input type="radio" name="user_gender" id="optionMale" value="male" checked>
                         Male
                     </label>
-                    </div>
-                    <div class="radio">
+                </div>
+                <div class="radio">
                     <label>
                     <input type="radio" name="user_gender" id="optionFemale" value="female">
                     Female
                     </label>
                 </div>
-                <div class="form-group">
+                <div id="password_error_message" style="visibility: invisible;">
+                </div>
+                <div id="user_password_container" class="form-group">
                     <label for="user_password">Password</label>
-                    <input type="password" class="form-control" id="user_password" placeholder="Password" name="user_password">
+                    <input type="password" class="form-control" id="user_password" placeholder="Password" name="user_password" required>
+                </div>
+                <div id="user_password_confirmation_container" class="form-group">
+                    <label for="user_password_confirmation">Confirm Password</label>
+                    <input type="password" class="form-control" id="user_password_confirmation" placeholder="Password" required>
                 </div>
                 <button type="submit" class="btn btn-default">Submit</button>
+                <div id="send_error_message" style="visibility: invisible;">
+                </div>
             </form>
         </div>
         <div class="row">
-            <div id="result" class="col-xs-4 col-xs-offest-4">
+            <div id="result" class="col-xs-12">
             </div>
         </div>
     </div>
@@ -73,7 +84,6 @@
       <script>
           // Attach a submit handler to the form
         $( "#registration-form" ).submit(function( event ) {
-
             // Stop form from submitting normally
             event.preventDefault();
 
@@ -83,18 +93,65 @@
             var user_email = $form.find( "input[name='user_email']" ).val();
             var user_gender = $form.find( "input[name='user_gender']" ).val();
             var user_password = $form.find( "input[name='user_password']" ).val();
-            
-                
+            var user_password_confirmation = $form.find( "input[id='user_password_confirmation']" ).val();
             var url = $form.attr( "action" );
+            
+//            console.log(user_password);
+//            console.log(user_password_confirmation);
+            
+            if(user_password != user_password_confirmation ) {
+                console.log('different passwords');
+//                // Different password case
+                $("#password_error_message").html('<div class="alert alert-warning alert-dismissible" role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button><strong>Passwords do not match!</strong> Enter the same password in both fields.</div>');
+                var badColor = "#ff6666";
 
-            // Send the data using post
-            var posting = $.post( url, { user_name: user_name, user_email: user_email, user_gender: user_gender, user_password: user_password  } );
+                $("#user_password_container").addClass("has-error");
+                $("#user_password_confirmation_container").addClass("has-error");
+                $("#password_error_message").fadeTo(3000, 500).slideUp(500, function(){
+                    $("#password_error_message").alert('close');
+                });
+            } else {
+                console.log('same passwords');
+                // Send the data using post
+                var posting = $.post( url, { user_name: user_name, user_email: user_email, user_gender: user_gender, user_password: user_password  } );
 
-            // Put the results in a div
-            posting.done(function( data ) {
-                console.log(data);
-                $( "#result" ).empty().append('<p>' + JSON.stringify(data) + '</p>' );
-            });
+                // Put the results in a div
+                posting.done(function( data ) {
+                    console.log(data);
+//                    $( "#result" ).empty().append('<p>' + JSON.stringify(data) + '</p>' );
+                    // Have to do different operations based on response
+                    // success
+                    if(data.success == true) {
+//                        $( "#result" ).append('<p>sucess' + data.success + '</p>' );
+                        $( "#registration-form" ).fadeOut( "slow", function() {
+                            // Animation complete.
+                            $("#result").html('<div class="alert alert-success" role="alert">Confirmation email sent. <strong>Check your email.</strong></div>');
+                            
+                        });
+                    }
+                    // existing
+                    if(data.existing == true) {
+//                        $( "#result" ).append('<p>existing' + data.existing + '</p>' );
+                        $("#email_error_message").html('<div class="alert alert-danger alert-dismissible" role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button><strong>User alread exists.</strong><br/>User alread exists in our database. Go to login.</div>');
+                        $("#email_error_message").fadeTo(4000, 500).slideUp(500, function(){
+                            $("#email_error_message").alert('close');
+                        });
+                    }
+                    // sendError
+                    if(data.sendError == true) {
+//                        $( "#result" ).append('<p>sendError' + data.sendError + '</p>' );
+                        $("#send_error_message").html('<div class="alert alert-danger alert-dismissible" role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button><strong>Could not send email!</strong><br/>Please report this to the administrator.</div>');
+                    }
+                    // requested
+                    if(data.requested == true) {
+//                        $( "#result" ).append('<p>requested' + data.requested + '</p>' );
+                        $("#email_error_message").html('<div class="alert alert-warning alert-dismissible" role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button><strong>Registrations already requested!</strong><br/>Check your email for confirmation or register using a new email.</div>');
+                        $("#email_error_message").fadeTo(4000, 500).slideUp(500, function(){
+                            $("#email_error_message").alert('close');
+                        });
+                    }
+                });
+            }
         });
       </script>
 
