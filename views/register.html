@@ -28,7 +28,7 @@
     <div class="container-fluid" style="margin-top: 51px;">
         <div class="row" style="margin-top: 10px;">
             <h1 class="col-xs-4 col-xs-offset-4 text-center">Register</h1>
-            <form class="col-xs-4 col-xs-offset-4" action="/registeruser" method="post">
+            <form id="registration-form" class="col-xs-4 col-xs-offset-4" action="/registeruser" method="post">
                 <div class="form-group">
                     <label for="user_name">Name</label>
                     <input type="text" class="form-control" id="user_name" placeholder="Jane Doe" name="user_name">
@@ -56,6 +56,10 @@
                 <button type="submit" class="btn btn-default">Submit</button>
             </form>
         </div>
+        <div class="row">
+            <div id="result" class="col-xs-4 col-xs-offest-4">
+            </div>
+        </div>
     </div>
 
     <!-- Bootstrap core JavaScript
@@ -64,5 +68,35 @@
     <script src="js/jquery-1.11.2.js"></script>
     <script src="js/bootstrap.js"></script>
     <script src="js/docs.js"></script>
+      
+      <!-- My javascript -->
+      <script>
+          // Attach a submit handler to the form
+        $( "#registration-form" ).submit(function( event ) {
+
+            // Stop form from submitting normally
+            event.preventDefault();
+
+            // Get some values from elements on the page:
+            var $form = $( this );
+            var user_name = $form.find( "input[name='user_name']" ).val();
+            var user_email = $form.find( "input[name='user_email']" ).val();
+            var user_gender = $form.find( "input[name='user_gender']" ).val();
+            var user_password = $form.find( "input[name='user_password']" ).val();
+            
+                
+            var url = $form.attr( "action" );
+
+            // Send the data using post
+            var posting = $.post( url, { user_name: user_name, user_email: user_email, user_gender: user_gender, user_password: user_password  } );
+
+            // Put the results in a div
+            posting.done(function( data ) {
+                console.log(data);
+                $( "#result" ).empty().append('<p>' + JSON.stringify(data) + '</p>' );
+            });
+        });
+      </script>
+
     </body>
 </html>

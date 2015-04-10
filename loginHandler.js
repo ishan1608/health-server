@@ -5,17 +5,16 @@ var Cookies = require( "cookies" )
 var keygrip = require("keygrip")
 var MongoClient = require('mongodb').MongoClient;
 var fs = require('fs');
+var nodemailer = require('nodemailer');
+var url = require('url');
 
 var mongoUri = process.env.MONGOHQ_URL || 'mongodb://127.0.0.1:27017/health-database';
+var fromEmail = process.env.FROM_EMAIL || 'tempexp6@gmail.com';
+var fromPassword = process.env.FROM_PASSWORD || 'TempExp@06';
 
-// Hardcoded user Information
-var users = [
-    { useremail: 'ishan1608@gmail.com', userpassword: '123456', cookiejar:[]},
-    { useremail: 'ishan1608@live.com', userpassword: 'qwerty', cookiejar:[]}, 
-    { useremail: 'ishanatmuzaffarpur@gmail.com', userpassword: 'asdfgh', cookiejar:[]}
-];
 
-var keys = keys = keygrip([ process.env.COOKIESECRET1 || "COOKIESECRET1", process.env.COOKIESECRET2 || "COOKIESECRET2" ], 'sha256', 'hex');
+
+var keys = keygrip([ process.env.COOKIESECRET1 || "COOKIESECRET1", process.env.COOKIESECRET2 || "COOKIESECRET2" ], 'sha256', 'hex');
 
 // Asynchronous function using callback
 function userVerification(useremail, userpassword, callback) {
@@ -240,13 +239,146 @@ function register(req, res) {
 };
 
 function registeruser(req, res) {
+    console.log('Register user called');
     // TODO: Check if user already exists
     var form = formidable.IncomingForm();
     form.parse(req, function(err, fields, files) {
-        res.writeHead(200, {'Content-Type': 'text/plain', 'charset': 'utf-8'});
-        res.write(fields.user_name + "\n" + fields.user_email + "\n" + fields.user_gender + "\n" + fields.user_password + "\n");
-        res.end('I am working on sending a verification email before completing the registration.');
+        if(err) {
+            res.writeHead(500, {'Content-Type': 'text/plain'});
+            res.end('There was an error collecting the info given.');
+        } else {
+            // Store the user data into pending users
+            MongoClient.connect(mongoUri, function(err, db) {
+                if (err) {
+                    res.writeHead(500, {'Content-Type': 'text/plain'});
+                    res.end('There was a problem storing the user info, please contact the admin.');
+                } else {
+                    var collection = db.collection('pendingUsers');
+                    // Inserting the info of pending user
+                    var pendingUserInfo = {};
+                    pendingUserInfo.name = fields.user_name;
+                    pendingUserInfo.email = fields.user_email;
+                    pendingUserInfo.gender = fields.user_gender;
+                    pendingUserInfo.password = fields.user_password;
+
+                    // Generate a new pass
+                    var date = new Date();
+                    var pass = pendingUserInfo.email + date.toDateString() + date.getHours() + date.getMinutes() + date.getMilliseconds();
+                    pass = crypto.createHash('md5').update(pass).digest("hex");
+
+                    pendingUserInfo.pass = pass;
+                    var registrationURL = req.headers.host + '/confirmUser?user_email=' + pendingUserInfo.email + '&pass=' + pendingUserInfo.pass;
+
+                    collection.insert(pendingUserInfo, function(err, result) {
+                            if (err) {
+                                res.writeHead(200, {'Content-Type': 'application/json'});
+                                res.end(JSON.stringify({success: false, existing: false, sendError: false, requested: true}));
+                            } else {
+                                // Sending mail to the user
+                                var transporter = nodemailer.createTransport({
+                                    service: 'Gmail',
+                                    auth: {
+                                        user: fromEmail,
+                                        pass: fromPassword
+                                    }
+                                });
+                                transporter.sendMail({
+                                    from: fromEmail,
+                                    to: pendingUserInfo.email,
+                                    subject: 'Complete Registration',
+                                    text: registrationURL,
+                                    html: '<p>To complete the <b>registration</b> <a  target="_blank" href="http://' + registrationURL + '">click here</a></p><p>If clicking on the above link didn\'t work. Copy and paste the following url into your browser :</p><p>' + registrationURL + '</p>'
+                                }, function(error, response){
+                                    if(error){
+                                        console.log('Failed in sending mail');
+                                        res.writeHead(200, {'Content-Type': 'application/json'});
+                                        res.end(JSON.stringify({success: false, existing: false, sendError: true, requested: false}));
+                                    }else{
+                                        console.log('Successful in sedning email');
+                                        res.writeHead(200, {'Content-Type': 'application/json'});
+                                        res.end(JSON.stringify({success: true, existing: false, sendError: false, requested: false}));
+                                    }
+                                });
+                            }
+                    });
+                }
+            });
+        }
+//        res.writeHead(200, {'Content-Type': 'text/plain', 'charset': 'utf-8'});
+//        res.write(fields.user_name + "\n" + fields.user_email + "\n" + fields.user_gender + "\n" + fields.user_password + "\n");
+//        res.end('I am working on sending a verification email before completing the registration.'); 
     });
+};
+
+function confirmUser(req, res) {
+//    res.writeHead(200, {'Content-Type': 'text/plain'});
+//    res.end('Hello  ' + req.user_email + '\nI am working on making this website\'s functionality complete, day and well not days... just any time that I feel like.\nBe assured this will be up soon.\nYour pass key is ' + req.pass);
+    if((req.pass == null) || (req.user_email == null)) {
+        console.dir(req);
+        var url_parts = url.parse(req.url, true);
+        res.writeHead(200, {'Content-Type': 'text/plain'});
+        res.write('pass:' + url_parts.pass + ' email: ' + url_parts.user_email );
+        res.end('Info missing :\nEmail: ' + req.user_email + '\nPass: ' + req.pass);
+    } else {
+        // TODO: Check for user already registered
+        
+        // Checking for the user info in pending users
+        MongoClient.connect(mongoUri, function(err, db) {
+        var collection = db.collection('pendingUsers');
+        collection.findOne({email: req.user_email, pass: req.pass}, {_id: 0}, function(err, pendingUserInfo){
+            if(err) {
+                res.writeHead(500, {'Content-Type': 'text/plain'});
+                res.end('There was an error connecting to database, please contact admin.');
+                db.close();
+            } else {
+                if(pendingUserInfo == null) {
+                    res.writeHead(500, {'Content-Type': 'text/plain'});
+                    res.end('Can\'t find user. The user may have already confirmed registration.' + 'Please contact admin.');
+                    console.log('Can\'t find user. The user may have already confirmed registration.');
+                    db.close();
+                } else {
+                    var collection = db.collection('users');
+                    collection.insert(pendingUserInfo, function(err, userInfo){
+                        if(err) {
+                            res.writeHead(500, {'Content-Type': 'text/plain'});
+                            res.end('Error while saving user information.' + 'Please contact admin.');
+                            console.error('Error while saving user information.');
+                            db.close();
+                        } else {
+                            // Successfully inserted
+                            console.log('successfully registered');
+                            
+                            // Removing from pending users list
+                            var collection = db.collection('pendingUsers');
+                            console.log('userInfo');
+                            console.dir(userInfo);
+                            console.log('pendingUserIfo');
+                            console.log(pendingUserInfo.email);
+                            
+                            collection.remove({email: user_email}, function(err, removalResult) {
+                                if(err) {
+                                    console.dir(err);
+                                    console.log('failed');
+                                    db.close();
+                                } else {
+                                    console.dir(removalResult);
+                                    if(removalResult > 0) {
+                                        console.log('success');
+                                        res.writeHead(200, {'Content-Type': 'text/html'});
+                                        res.write('<html><head></head><body>Registered successfully. Please <a href="/login">login</a>.</body></html>');
+                                        res.end();
+                                    }
+                                    db.close();
+                                }
+                            });
+                        }
+                    });
+                }
+            }
+        });
+    });
+    }
+    
 };
 
 exports.loginLocal = loginLocal;
@@ -255,3 +387,4 @@ exports.logout = logout;
 exports.logoutOthers = logoutOthers;
 exports.register = register;
 exports.registeruser = registeruser;
+exports.confirmUser = confirmUser;

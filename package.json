@@ -12,7 +12,8 @@
     "keygrip": "^1.0.1",
     "mongodb": "^1.4.30",
     "mustache": "^1.1.0",
-    "node-static": "^0.7.6"
+    "node-static": "^0.7.6",
+    "nodemailer": "^1.3.2"
   },
   "repository": {
     "type": "git",

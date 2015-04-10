@@ -12,7 +12,9 @@ http.createServer(function (req, res) {
 //    console.log("urlInfo");
     console.log(urlInfo.path);
     var firstLocation = urlInfo.path.split('/')[1];
-//    console.log(firstLocation);
+    firstLocation = firstLocation.split('?')[0];
+    console.log('FirstLocation');
+    console.log(firstLocation);
     
     // Serving CSS, JS, Images and favicon
     if(firstLocation === 'css' || firstLocation === 'js' || firstLocation === 'img' || firstLocation === 'favicon.ico' || firstLocation === 'fonts') {
@@ -42,6 +44,9 @@ http.createServer(function (req, res) {
                 break;
                 case 'registeruser':
                     loginHandler.registeruser(req, res);
+                break;
+                case 'confirmUser':
+                    loginHandler.confirmUser(req, res);
                 break;
                 default:
                     viewHandlers.notFound(req, res);
