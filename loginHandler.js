@@ -313,19 +313,19 @@ function registeruser(req, res) {
 function confirmUser(req, res) {
 //    res.writeHead(200, {'Content-Type': 'text/plain'});
 //    res.end('Hello  ' + req.user_email + '\nI am working on making this website\'s functionality complete, day and well not days... just any time that I feel like.\nBe assured this will be up soon.\nYour pass key is ' + req.pass);
-    if((req.pass == null) || (req.user_email == null)) {
-        console.dir(req);
-        var url_parts = url.parse(req.url, true);
+    var url_parts = url.parse(req.url, true);
+    console.log(url_parts);
+    if((url_parts.query.user_email == null) || (url_parts.query.pass == null)) {
         res.writeHead(200, {'Content-Type': 'text/plain'});
-        res.write('pass:' + url_parts.pass + ' email: ' + url_parts.user_email );
-        res.end('Info missing :\nEmail: ' + req.user_email + '\nPass: ' + req.pass);
+        res.write('pass:' + url_parts.query.pass + ' email: ' + url_parts.query.user_email );
+        res.end('Info missing :\nEmail: ' + url_parts.query.user_email + '\nPass: ' + url_parts.query.pass);
     } else {
         // TODO: Check for user already registered
         
         // Checking for the user info in pending users
         MongoClient.connect(mongoUri, function(err, db) {
         var collection = db.collection('pendingUsers');
-        collection.findOne({email: req.user_email, pass: req.pass}, {_id: 0}, function(err, pendingUserInfo){
+        collection.findOne({email: url_parts.query.user_email, pass: url_parts.query.pass}, {_id: 0}, function(err, pendingUserInfo){
             if(err) {
                 res.writeHead(500, {'Content-Type': 'text/plain'});
                 res.end('There was an error connecting to database, please contact admin.');
@@ -355,7 +355,7 @@ function confirmUser(req, res) {
                             console.log('pendingUserIfo');
                             console.log(pendingUserInfo.email);
                             
-                            collection.remove({email: user_email}, function(err, removalResult) {
+                            collection.remove({email: url_parts.query.user_email}, function(err, removalResult) {
                                 if(err) {
                                     console.dir(err);
                                     console.log('failed');
@@ -365,7 +365,7 @@ function confirmUser(req, res) {
                                     if(removalResult > 0) {
                                         console.log('success');
                                         res.writeHead(200, {'Content-Type': 'text/html'});
-                                        res.write('<html><head></head><body>Registered successfully. Please <a href="/login">login</a>.</body></html>');
+                                        res.write('<html><head></head><body>Registered successfully. Please <a href="/">login</a>.</body></html>');
                                         res.end();
                                     }
                                     db.close();
