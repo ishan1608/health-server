@@ -20,17 +20,20 @@ function checkUser(req, res) {
     form.parse(req, function (err, fields, files) {
         if(err) {
             res.writeHead(500, {'Content-Type': 'application/json'});
+            console.log(JSON.stringify({error: true, databaseError: false, user: null, description: 'form-error'}));
             res.end(JSON.stringify({error: true, databaseError: false, user: null, description: 'form-error'}));
         } else {
             if(fields.email == undefined) {
                 // Not Acceptable format
                 res.writeHead(406, {'Content-Type': 'application/json'});
+                console.log(JSON.stringify({error: true, databaseError: false, user: null, description: 'email-missing'}));
                 res.end(JSON.stringify({error: true, databaseError: false, user: null, description: 'email-missing'}));
             } else {
                 // Connecting to database
                 MongoClient.connect(mongoUri, function(err, db) {
                     if(err) {
                         res.writeHead(500, {'Content-Type': 'application/json'});
+                        console.log(JSON.stringify({error: true, databaseError: true, user: null, description: 'database-connection-error'}));
                         res.end(JSON.stringify({error: true, databaseError: true, user: null, description: 'database-connection-error'}));
                         db.close();
                     } else {
@@ -38,17 +41,20 @@ function checkUser(req, res) {
                         collection.findOne({email: fields.email}, function(err, result) {
                             if(err) {
                                 res.writeHead(500, {'Content-Type': 'application/json'});
+                                console.log(JSON.stringify({error: true, databaseError: true, user: null, description: 'database-find-error'}));
                                 res.end(JSON.stringify({error: true, databaseError: true, user: null, description: 'database-find-error'}));
                                 db.close();
                             } else {
                                 if(result == null) {
                                     // user not found
                                     res.writeHead(404, {'Content-Type': 'application/json'});
+                                    console.log(JSON.stringify({error: true, databaseError: false, user: null, description: 'user-nonexistent'}));
                                     res.end(JSON.stringify({error: true, databaseError: false, user: null, description: 'user-nonexistent'}));
                                     db.close();
                                 } else {
                                     // User already registered
                                     res.writeHead(500, {'Content-Type': 'application/json'});
+                                    console.log(JSON.stringify({error: false, databaseError: false, user: result.email, description: 'user-found'}));
                                     res.end(JSON.stringify({error: false, databaseError: false, user: result.email, description: 'user-found'}));
                                     db.close();
                                 }
@@ -61,22 +67,25 @@ function checkUser(req, res) {
     });
 }
 
-function resgisterAppuser(req, res) {
+function resgisterAppUser(req, res) {
     var form = new formidable.IncomingForm();
     form.parse(req, function(err, fields, files) {
         if(err) {
             res.writeHead(500, {'Content-Type': 'application/json'});
+            console.log(JSON.stringify({error: true, databaseError: false, user: null, description: 'form-error'}));
             res.end(JSON.stringify({error: true, databaseError: false, user: null, description: 'form-error'}));
         } else {
             if(fields.email == null && fields.name == null && fields.gender == null && fields.password == null) {
                 // Not Acceptable format
                 res.writeHead(406, {'Content-Type': 'application/json'});
-                rres.end(JSON.stringify({error: true, databaseError: false, user: null, description: 'information-missing'}));
+                console.log(JSON.stringify({error: true, databaseError: false, user: null, description: 'information-missing'}));
+                res.end(JSON.stringify({error: true, databaseError: false, user: null, description: 'information-missing'}));
             } else {
                 // Connecting to database
                 MongoClient.connect(mongoUri, function(err, db) {
                     if(err) {
                         res.writeHead(500, {'Content-Type': 'application/json'});
+                        console.log(JSON.stringify({error: true, databaseError: true, user: null, description: 'database-connection-error'}));
                         res.end(JSON.stringify({error: true, databaseError: true, user: null, description: 'database-connection-error'}));
                         db.close();
                     } else {
@@ -85,17 +94,20 @@ function resgisterAppuser(req, res) {
                         collection.insert({email: fields.email, name: fields.name, gender: fields.gender, password: fields.password}, function(err, result) {
                             if(err) {
                                 res.writeHead(500, {'Content-Type': 'application/json'});
+                                console.log(JSON.stringify({error: true, databaseError: true, user: null, description: 'database-find-error'}));
                                 res.end(JSON.stringify({error: true, databaseError: true, user: null, description: 'database-find-error'}));
                                 db.close();
                             } else {
                                 if(result == null) {
                                     // user not found
                                     res.writeHead(404, {'Content-Type': 'application/json'});
+                                    console.log(JSON.stringify({error: true, databaseError: false, user: null, description: 'user-nonexistent'}));
                                     res.end(JSON.stringify({error: true, databaseError: false, user: null, description: 'user-nonexistent'}));
                                     db.close();
                                 } else {
                                     // User already registered
                                     res.writeHead(500, {'Content-Type': 'application/json'});
+                                    console.log(JSON.stringify({error: false, databaseError: false, user: result.email, description: 'user-found'}));
                                     res.end(JSON.stringify({error: false, databaseError: false, user: result.email, description: 'user-found'}));
                                     db.close();
                                 }
@@ -109,3 +121,4 @@ function resgisterAppuser(req, res) {
 }
 
 exports.checkUser = checkUser;
+exports.registerAppUser = resgisterAppUser;
