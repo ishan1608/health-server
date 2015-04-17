@@ -54,6 +54,9 @@ http.createServer(function (req, res) {
                 case 'uploadImage':
                     viewHandlers.uploadImage(req, res);
                 break;
+                case 'checkUser':
+                    appHandler.checkUser(req, res);
+                break;
                 default:
                     viewHandlers.notFound(req, res);
         }
