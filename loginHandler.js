@@ -303,6 +303,9 @@ function registeruser(req, res) {
                                             text: registrationURL,
                                             html: '<p>To complete the <b>registration</b> <a  target="_blank" href="http://' + registrationURL + '">click here</a></p><p>If clicking on the above link didn\'t work. Copy and paste the following url into your browser :</p><p>' + registrationURL + '</p>'
                                         }, function (error, response) {
+                                            console.log('ISHAN' + 'Information related to sending email');
+                                            console.dir(error);
+                                            console.dir(response);
                                             if (error) {
                                                 //Email not sent
                                                 console.log('Failed in sending mail');
