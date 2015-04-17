@@ -7,6 +7,7 @@ var MongoClient = require('mongodb').MongoClient;
 var fs = require('fs');
 var nodemailer = require('nodemailer');
 var url = require('url');
+var smtpTransport = require('nodemailer-smtp-transport');
 
 var mongoUri = process.env.MONGOHQ_URL || 'mongodb://127.0.0.1:27017/health-database';
 var fromEmail = process.env.FROM_EMAIL || 'tempexp6@gmail.com';
@@ -280,33 +281,37 @@ function registeruser(req, res) {
 
                                 pendingUserInfo.pass = pass;
                                 var registrationURL = req.headers.host + '/confirmUser?user_email=' + pendingUserInfo.email + '&pass=' + pendingUserInfo.pass;
-                                        collection.insert(pendingUserInfo, function(err, result) {
+                                collection.insert(pendingUserInfo, function(err, result) {
                                     if (err) {
                                         res.writeHead(200, {'Content-Type': 'application/json'});
                                         res.end(JSON.stringify({success: false, existing: false, sendError: false, requested: true}));
                                         db.close();
                                     } else {
-                                        // Sending mail to the user
-                                        var transporter = nodemailer.createTransport({
+                                        // Sending mail to the user                                        
+                                        var transporter = nodemailer.createTransport(smtpTransport({
                                             service: 'Gmail',
                                             auth: {
                                                 user: fromEmail,
                                                 pass: fromPassword
                                             }
-                                        });
+                                        }));
+
                                         transporter.sendMail({
                                             from: fromEmail,
                                             to: pendingUserInfo.email,
                                             subject: 'Complete Registration',
                                             text: registrationURL,
                                             html: '<p>To complete the <b>registration</b> <a  target="_blank" href="http://' + registrationURL + '">click here</a></p><p>If clicking on the above link didn\'t work. Copy and paste the following url into your browser :</p><p>' + registrationURL + '</p>'
-                                        }, function(error, response){
-                                            if(error){
+                                        }, function (error, response) {
+                                            if (error) {
+                                                //Email not sent
                                                 console.log('Failed in sending mail');
                                                 res.writeHead(200, {'Content-Type': 'application/json'});
                                                 res.end(JSON.stringify({success: false, existing: false, sendError: true, requested: false}));
                                                 db.close();
-                                            }else{
+                                            }
+                                            else {
+                                                //email sent sucessfully
                                                 console.log('Successful in sedning email');
                                                 res.writeHead(200, {'Content-Type': 'application/json'});
                                                 res.end(JSON.stringify({success: true, existing: false, sendError: false, requested: false}));
