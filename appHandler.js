@@ -88,16 +88,16 @@ function resgisterAppUser(req, res) {
                         db.close();
                     } else {
                         if(result == null) {
-                            // user not found
-                            res.writeHead(404, {'Content-Type': 'application/json'});
-                            console.log(JSON.stringify({error: true, databaseError: false, user: null, description: 'user-nonexistent'}));
-                            res.end(JSON.stringify({error: true, databaseError: false, user: null, description: 'user-nonexistent'}));
+                            // user wasn't registrered
+                            res.writeHead(200, {'Content-Type': 'application/json'});
+                            console.log(JSON.stringify({error: true, databaseError: false, user: null, description: 'user-not-registered'}));
+                            res.end(JSON.stringify({error: true, databaseError: false, user: null, description: 'user-not-registered'}));
                             db.close();
                         } else {
-                            // User already registered
-                            res.writeHead(500, {'Content-Type': 'application/json'});
-                            console.log(JSON.stringify({error: false, databaseError: false, user: result.email, description: 'user-found'}));
-                            res.end(JSON.stringify({error: false, databaseError: false, user: result.email, description: 'user-found'}));
+                            // User successfully registered
+                            res.writeHead(200, {'Content-Type': 'application/json'});
+                            console.log(JSON.stringify({error: false, databaseError: false, user: result.email, description: 'user-registered'}));
+                            res.end(JSON.stringify({error: false, databaseError: false, user: result.email, description: 'user-registered'}));
                             db.close();
                         }
                     }
