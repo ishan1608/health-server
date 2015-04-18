@@ -6,6 +6,7 @@ var staticServer = new(nodeStatic.Server)();
 var port = Number(process.env.PORT || 8080);
 var viewHandlers = require('./viewHandlers');
 var loginHandler = require('./loginHandler');
+var appHandler = require('./appHandler');
 
 http.createServer(function (req, res) {
     var urlInfo  = url.parse(req.url, true, true);
