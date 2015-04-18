@@ -43,13 +43,13 @@ function checkUser(req, res) {
                     } else {
                         if(result == null) {
                             // user not found
-                            res.writeHead(404, {'Content-Type': 'application/json'});
+                            res.writeHead(200, {'Content-Type': 'application/json'});
                             console.log(JSON.stringify({error: true, databaseError: false, user: null, description: 'user-nonexistent'}));
                             res.end(JSON.stringify({error: true, databaseError: false, user: null, description: 'user-nonexistent'}));
                             db.close();
                         } else {
                             // User already registered
-                            res.writeHead(500, {'Content-Type': 'application/json'});
+                            res.writeHead(200, {'Content-Type': 'application/json'});
                             console.log(JSON.stringify({error: false, databaseError: false, user: result.email, description: 'user-found'}));
                             res.end(JSON.stringify({error: false, databaseError: false, user: result.email, description: 'user-found'}));
                             db.close();
