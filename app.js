@@ -61,6 +61,10 @@ http.createServer(function (req, res) {
                 case 'registerAppUser':
                     appHandler.registerAppUser(req, res);
                 break;
+                case:
+                    'articleList':
+                    appHandler.articleList(req, res);
+                break;
                 default:
                     viewHandlers.notFound(req, res);
         }

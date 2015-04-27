@@ -107,5 +107,23 @@ function resgisterAppUser(req, res) {
     }
 }
 
+function articleList(req, res) {
+    dummyArticles = {articles: [
+        {title: 'Article1', link: 'http://ishanatmuz.wordpress.com/'},
+        {title: 'Article2', link: 'http://ishanatmuz.wordpress.com/'},
+        {title: 'Article3', link: 'http://ishanatmuz.wordpress.com/'},
+        {title: 'Article4', link: 'http://ishanatmuz.wordpress.com/'},
+        {title: 'Article5', link: 'http://ishanatmuz.wordpress.com/'},
+        {title: 'Article6', link: 'http://ishanatmuz.wordpress.com/'},
+        {title: 'Article7', link: 'http://ishanatmuz.wordpress.com/'},
+        {title: 'Article8', link: 'http://ishanatmuz.wordpress.com/'},
+        {title: 'Article9', link: 'http://ishanatmuz.wordpress.com/'},
+        {title: 'Article10', link: 'http://ishanatmuz.wordpress.com/'},
+    ]}
+    res.writeHead(200, {'Content-Type': 'text/json'});
+    
+}
+
 exports.checkUser = checkUser;
 exports.registerAppUser = resgisterAppUser;
+exports.articleList = articleList;
