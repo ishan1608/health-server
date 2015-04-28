@@ -61,8 +61,7 @@ http.createServer(function (req, res) {
                 case 'registerAppUser':
                     appHandler.registerAppUser(req, res);
                 break;
-                case:
-                    'articleList':
+                case 'articleList':
                     appHandler.articleList(req, res);
                 break;
                 default:
