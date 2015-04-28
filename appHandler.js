@@ -110,12 +110,12 @@ function resgisterAppUser(req, res) {
 function articleList(req, res) {
     dummyArticles = {articles: [
         {title: 'Article1', link: 'http://ishanatmuz.wordpress.com/'},
-        {title: 'Article2', link: 'http://ishanatmuz.wordpress.com/'},
+        {title: 'Article2', link: 'https://github.com/ishanatmuz/'},
         {title: 'Article3', link: 'http://ishanatmuz.wordpress.com/'},
-        {title: 'Article4', link: 'http://ishanatmuz.wordpress.com/'},
+        {title: 'Article4', link: 'https://github.com/ishanatmuz/'},
         {title: 'Article5', link: 'http://ishanatmuz.wordpress.com/'},
         {title: 'Article6', link: 'http://ishanatmuz.wordpress.com/'},
-        {title: 'Article7', link: 'http://ishanatmuz.wordpress.com/'},
+        {title: 'Article7', link: 'https://github.com/ishanatmuz/'},
         {title: 'Article8', link: 'http://ishanatmuz.wordpress.com/'},
         {title: 'Article9', link: 'http://ishanatmuz.wordpress.com/'},
         {title: 'Article10', link: 'http://ishanatmuz.wordpress.com/'},
