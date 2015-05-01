@@ -120,8 +120,17 @@ function articleList(req, res) {
         {title: 'Article9', link: 'http://ishanatmuz.wordpress.com/'},
         {title: 'Article10', link: 'http://ishanatmuz.wordpress.com/'},
     ]}
-    res.writeHead(200, {'Content-Type': 'text/json'});
-    res.end(JSON.stringify(dummyArticles));
+//    res.writeHead(200, {'Content-Type': 'text/json'});
+//    res.end(JSON.stringify(dummyArticles));
+    MongoClient.connect(mongoUri, function(err, db) {
+        if(err) {
+            res.writeHead(200, {'Content-Type': 'text/json'});
+            res.end(JSON.stringify(dummyArticles));
+        } else {
+            res.writeHead(200, {'Content-Type': 'text/json'});
+            res.end(JSON.stringify(dummyArticles));
+        }
+    });
 }
 
 exports.checkUser = checkUser;
