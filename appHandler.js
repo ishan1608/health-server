@@ -108,27 +108,40 @@ function resgisterAppUser(req, res) {
 }
 
 function articleList(req, res) {
-    dummyArticles = {articles: [
-        {title: 'Article1', link: 'http://ishanatmuz.wordpress.com/'},
-        {title: 'Article2', link: 'https://github.com/ishanatmuz/'},
-        {title: 'Article3', link: 'http://ishanatmuz.wordpress.com/'},
-        {title: 'Article4', link: 'https://github.com/ishanatmuz/'},
-        {title: 'Article5', link: 'http://ishanatmuz.wordpress.com/'},
-        {title: 'Article6', link: 'http://ishanatmuz.wordpress.com/'},
-        {title: 'Article7', link: 'https://github.com/ishanatmuz/'},
-        {title: 'Article8', link: 'http://ishanatmuz.wordpress.com/'},
-        {title: 'Article9', link: 'http://ishanatmuz.wordpress.com/'},
-        {title: 'Article10', link: 'http://ishanatmuz.wordpress.com/'},
+    console.log("articleList got called");
+    articles = {articles: [
+        {category: 'dummy', title: 'Article1', link: 'http://ishanatmuz.wordpress.com/'},
+        {category: 'dummy', title: 'Article2', link: 'https://github.com/ishanatmuz/'},
+        {category: 'dummy', title: 'Article3', link: 'http://ishanatmuz.wordpress.com/'},
+        {category: 'dummy', title: 'Article4', link: 'https://github.com/ishanatmuz/'},
+        {category: 'dummy', title: 'Article5', link: 'http://ishanatmuz.wordpress.com/'},
+        {category: 'dummy', title: 'Article6', link: 'http://ishanatmuz.wordpress.com/'},
+        {category: 'dummy', title: 'Article7', link: 'https://github.com/ishanatmuz/'},
+        {category: 'dummy', title: 'Article8', link: 'http://ishanatmuz.wordpress.com/'},
+        {category: 'dummy', title: 'Article9', link: 'http://ishanatmuz.wordpress.com/'},
+        {category: 'dummy', title: 'Article10', link: 'http://ishanatmuz.wordpress.com/'},
     ]}
 //    res.writeHead(200, {'Content-Type': 'text/json'});
 //    res.end(JSON.stringify(dummyArticles));
     MongoClient.connect(mongoUri, function(err, db) {
         if(err) {
             res.writeHead(200, {'Content-Type': 'text/json'});
-            res.end(JSON.stringify(dummyArticles));
+            res.end(JSON.stringify(articles));
         } else {
-            res.writeHead(200, {'Content-Type': 'text/json'});
-            res.end(JSON.stringify(dummyArticles));
+            var collection = db.collection('articles');
+            collection.find().limit(20).toArray(function(err, items) {
+                if(err) {
+                    res.writeHead(200, {'Content-Type': 'text/json'});
+                    res.end(JSON.stringify(articles));
+                    db.close();
+                } else {
+                    articles.articles = items;
+                    console.dir(articles);
+                    res.writeHead(200, {'Content-Type': 'text/json'});
+                    res.end(JSON.stringify(articles));
+                    db.close();
+                }
+            });
         }
     });
 }
