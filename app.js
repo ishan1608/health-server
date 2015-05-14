@@ -2,6 +2,7 @@ var http = require('http');
 var url = require('url');
 var nodeStatic = require('node-static');
 var staticServer = new(nodeStatic.Server)();
+var wurl = require('wurl');
 
 var port = Number(process.env.PORT || 8080);
 var viewHandlers = require('./viewHandlers');
@@ -9,13 +10,14 @@ var loginHandler = require('./loginHandler');
 var appHandler = require('./appHandler');
 
 http.createServer(function (req, res) {
-    var urlInfo  = url.parse(req.url, true, true);
-//    console.log("urlInfo");
-    console.log(urlInfo.path);
-    var firstLocation = urlInfo.path.split('/')[1];
-    firstLocation = firstLocation.split('?')[0];
-    console.log('FirstLocation');
+//    var urlInfo  = url.parse(req.url, true, true);
+//    console.log(urlInfo.path);
+//    var firstLocation = urlInfo.path.split('/')[1];
+//    firstLocation = firstLocation.split('?')[0];
+//    console.log('FirstLocation');
+    var firstLocation = wurl(1, req.url);
     console.log(firstLocation);
+    
     
     // Serving CSS, JS, Images and favicon
     if(firstLocation === 'css' || firstLocation === 'js' || firstLocation === 'img' || firstLocation === 'favicon.ico' || firstLocation === 'fonts') {
