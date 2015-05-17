@@ -10,8 +10,8 @@ var url = require('url');
 var smtpTransport = require('nodemailer-smtp-transport');
 
 var mongoUri = process.env.MONGOHQ_URL || 'mongodb://127.0.0.1:27017/health-database';
-var fromEmail = process.env.FROM_EMAIL || 'tempexp6@gmail.com';
-var fromPassword = process.env.FROM_PASSWORD || 'TempExp@06';
+var fromEmail = process.env.FROM_EMAIL || 'tempexp@outlook.com';
+var fromPassword = process.env.FROM_PASSWORD || 'm7382in@01';
 
 var keys = keygrip([ process.env.COOKIESECRET1 || "COOKIESECRET1", process.env.COOKIESECRET2 || "COOKIESECRET2" ], 'sha256', 'hex');
 
@@ -289,7 +289,7 @@ function registeruser(req, res) {
                                     } else {
                                         // Sending mail to the user                                        
                                         var transporter = nodemailer.createTransport(smtpTransport({
-                                            service: 'Gmail',
+                                            service: 'Hotmail',
                                             auth: {
                                                 user: fromEmail,
                                                 pass: fromPassword
@@ -395,6 +395,8 @@ function confirmUser(req, res) {
                                     console.dir(removalResult);
                                     if(removalResult > 0) {
                                         console.log('success');
+                                        // TODO: Emailing user for confirmation
+                                        // Responding to server
                                         res.writeHead(200, {'Content-Type': 'text/html'});
                                         res.write('<html><head></head><body>Registered successfully. Please <a href="/">login</a>.</body></html>');
                                         res.end();
