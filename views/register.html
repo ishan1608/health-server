@@ -115,6 +115,17 @@
                 $("#password_error_message").fadeTo(3000, 500).slideUp(500, function(){
                     $("#password_error_message").alert('close');
                 });
+            } else if(user_password.length <6){
+                console.log('password too small');
+//                // Password too small case
+                $("#password_error_message").html('<div class="alert alert-warning alert-dismissible" role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button><strong>Passwords too small!</strong>Password should be at least 6 characters long.</div>');
+                var badColor = "#ff6666";
+
+                $("#user_password_container").addClass("has-error");
+                $("#user_password_confirmation_container").addClass("has-error");
+                $("#password_error_message").fadeTo(3000, 500).slideUp(500, function(){
+                    $("#password_error_message").alert('close');
+                });
             } else {
                 console.log('same passwords');
                 // Send the data using post

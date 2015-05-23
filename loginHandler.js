@@ -323,9 +323,6 @@ function registeruser(req, res) {
                                         });
                                     }
                             });
-
-                                
-                                
                             }
                         }
                     });
