@@ -287,7 +287,8 @@ function registeruser(req, res) {
                                         res.end(JSON.stringify({success: false, existing: false, sendError: false, requested: true}));
                                         db.close();
                                     } else {
-                                        // Sending mail to the user                                        
+                                        // Sending mail to the user
+                                        console.log("Sending mail to the user with authentication : \nemail : " + fromEmail + "\npass : " + fromPassword);
                                         var transporter = nodemailer.createTransport(smtpTransport({
                                             service: 'Hotmail',
                                             auth: {
