@@ -239,6 +239,7 @@ function register(req, res) {
 
 function registeruser(req, res) {
     console.log('Register user called');
+    console.log("Sending mail to the user with authentication : \nemail : " + fromEmail + "\npass : " + fromPassword);
     // TODO: Check if user already exists
     var form = formidable.IncomingForm();
     form.parse(req, function(err, fields, files) {
